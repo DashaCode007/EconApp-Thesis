@@ -1,84 +1,186 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Switch, Modal, Text, TouchableOpacity } from 'react-native';
 import { SelectList } from 'react-native-dropdown-select-list';
-import { db, ref, onValue } from '../firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { db, ref, onValue, set } from '../firebase';
 
 const Chart = (props) => {
-  const [selected, setSelected] = React.useState("");
-  const [sensorData, setSensorData] = useState({});
+  const [selected, setSelected] = useState("");
+  const [relayStatus, setRelayStatus] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+
+  const relayStatusRef = ref(db, 'Relay/status');
 
   useEffect(() => {
-    const sensorRef = ref(db, 'PZEM004t');
-
-    const unsubscribeSensor = onValue(sensorRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        console.log('Fetched data:');
-        setSensorData(data);
-        console.log('YESSSSS');
-      } else {
-        console.log('No data found in Firebase.');
-      }
+    const unsubscribeRelay = onValue(relayStatusRef, (snapshot) => {
+      const relayData = snapshot.val();
+      setRelayStatus(relayData);
     });
 
-    // Clean up the subscription when the component unmounts
+    // Load the initial value of the selected appliance from AsyncStorage
+    const loadSelected = async () => {
+      try {
+        const value = await AsyncStorage.getItem('selectedAppliance');
+        if (value !== null) {
+          setSelected(value);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadSelected();
+
     return () => {
-      unsubscribeSensor();
+      unsubscribeRelay();
     };
   }, []);
 
-  if (!sensorData || !sensorData.hasOwnProperty('power')) {
-    return (
-      <View>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
+  const toggleSwitch = () => {
+    setConfirmationText(relayStatus ? "Are you sure you want to turn off the appliance?" : "Are you sure you want to turn on the appliance?");
+    setModalVisible(true);
+  };
 
-  return(
+  const handleToggleConfirm = (value) => {
+    setModalVisible(false);
+    set(relayStatusRef, value)
+      .then(() => {
+        console.log('Switch toggled successfully');
+      })
+      .catch(error => console.error(error));
+  };
 
-        <View style={styles.dropdown}>
-        <SelectList 
-                setSelected={(val) => setSelected(val)} 
-                data={data} 
-                save="value"
-                placeholder="Select an appliance"
-                isSearchable={false}
-                dropdownStyles={{ position: 'absolute', top: -150, backgroundColor: '#f8fcfb' }} 
+  const handleSelect = async (val) => {
+    setSelected(val);
+    try {
+      // Store the selected appliance in AsyncStorage
+      await AsyncStorage.setItem('selectedAppliance', val);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <View style={styles.footerContainer}>
+      <View style={styles.dropdown}>
+        <SelectList
+          isSearchable={false}
+          setSelected={(val) => handleSelect(val)}
+          data={data}
+          save="value"
+          placeholder="Select an appliance"         
+          dropdownStyles={{ position: 'absolute', top: -150, backgroundColor: '#f8fcfb' }}
         />
+      </View>
+      <View style={styles.switchContainer}>
+        <Switch
+          trackColor={{ false: '#767577', true: '#f8fcfb' }}
+          thumbColor={relayStatus ? '#9ae5c9' : '#f4f3f4'}
+          onValueChange={toggleSwitch}
+          value={relayStatus}
+        />
+      </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{confirmationText}</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.confirmButton]}
+                onPress={() => handleToggleConfirm(!relayStatus)}
+              >
+                <Text style={styles.textStyle}>Confirm</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.textStyleCancel}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-  )
+      </Modal>
+    </View>
+  );
 };
-            const data = [
-              {key:'1', value:'Fan'},
-              {key:'2', value:'Charger'},
-              {key:'3', value:'TV'},
-            ]
 
-const styles = StyleSheet.create( {
-  chartText: {
-    margin: 'auto'
+const data = [
+  { key: '1', value: 'Fan' },
+  { key: '2', value: 'Charger' },
+  { key: '3', value: 'Television' },
+];
+
+const styles = StyleSheet.create({
+  footerContainer: {
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    flexDirection: 'row',
   },
   dropdown: {
     backgroundColor: '#9ae5c9',
     width: 200,
-    borderRadius: 8
+    borderRadius: 8,
   },
-  dropdownContainer: {
-    position: 'relative', // Ensure the container is positioned relatively
+  switchContainer: {
+    // Add your styles here
   },
-  sample: {
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
     textAlign: 'center',
-   
   },
-  container: {
-    margin: 16,
+  modalButtons: {
+    flexDirection: 'row',
   },
-  text: {
-    fontSize: 16,
+  button: {
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    marginHorizontal: 10,
+  },
+  confirmButton: {
+    backgroundColor: '#4ac998',
+  },
+  cancelButton: {
+    backgroundColor: '#f8fcfb',
+  },
+  textStyle: {
+    color: 'white',
     fontWeight: 'bold',
-    marginBottom: 8,
+    textAlign: 'center',
   },
+  textStyleCancel: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#07130f'
+  }
 });
 
-export default Chart
+export default Chart;

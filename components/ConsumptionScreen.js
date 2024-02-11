@@ -9,9 +9,7 @@ const ConsumptionScreen = () => {
   const [latestTimestamp, setLatestTimestamp] = useState(null);
   const [latestSensorData, setLatestSensorData] = useState(null);
 
-  //SWitch
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
 
   useEffect(() => {
     const sensorRef = ref(db, 'PZEM004t');
@@ -67,17 +65,8 @@ const ConsumptionScreen = () => {
               <ChartConsumption />
         </View>
         <View style={styles.thirdContainer}>
-      
-        <Chart/>
-        <View style={styles.switchContainer}>
-          <Switch
-            trackColor={{false: '#767577', true: '#81b0ff'}}
-            thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-            onValueChange={toggleSwitch}
-            value={isEnabled}
-          />
-          </View>
-   
+          
+        <Chart/>  
       </View>
       </View>
       

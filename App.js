@@ -16,13 +16,16 @@ const MyStack = () => {
           name="Home"
           component={HomeScreen}
           options={{title: 'Econ Scanner', 
-          headerStyle: {backgroundColor: '#4AC998'}}} 
+          headerStyle: {backgroundColor: '#4AC998'},
+          headerLeft: null,
+        }} 
         />
         <Stack.Screen 
           name="Header" 
           component={Header} 
           options={{title: 'Econ Scanner',
-          headerStyle: {backgroundColor: '#4AC998'}}} />
+          headerStyle: {backgroundColor: '#4AC998'},
+          headerLeft: null,}} />
       </Stack.Navigator>
     </NavigationContainer>
   );
