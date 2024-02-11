@@ -30,7 +30,7 @@ const ChartComponent = () => {
   // Check if sensorData exists and has the expected properties
   if (!sensorData || !sensorData.hasOwnProperty('power')) {
     return (
-      <View>
+      <View style={styles.container}>
         <Text>Loading...</Text>
       </View>
     );
@@ -100,6 +100,12 @@ const ChartComponent = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fcfb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   chart: {
     marginVertical: 8,
     borderRadius: 16,
