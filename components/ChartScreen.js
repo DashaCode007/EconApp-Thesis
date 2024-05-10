@@ -13,9 +13,7 @@ const ChartCom = () => {
     const unsubscribeSensor = onValue(sensorRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        console.log('Fetched data:');
         setSensorData(data);
-        console.log('YESSSSS');
       } else {
         console.log('No data found in Firebase.');
       }

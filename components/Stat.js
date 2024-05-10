@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Switch, Modal, Text, TouchableOpacity } from 'react-native';
-import { SelectList } from 'react-native-dropdown-select-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db, ref, onValue, set } from '../firebase';
 
@@ -51,29 +50,12 @@ const Chart = (props) => {
       .catch(error => console.error(error));
   };
 
-  const handleSelect = async (val) => {
-    setSelected(val);
-    try {
-      // Store the selected appliance in AsyncStorage
-      await AsyncStorage.setItem('selectedAppliance', val);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <View style={styles.footerContainer}>
-      <View style={styles.dropdown}>
-        <SelectList
-          isSearchable={false}
-          setSelected={(val) => handleSelect(val)}
-          data={data}
-          save="value"
-          placeholder="Select an appliance"         
-          dropdownStyles={{ position: 'absolute', top: -150, backgroundColor: '#f8fcfb' }}
-        />
-      </View>
       <View style={styles.switchContainer}>
+        <Text style={styles.textSwitch}>
+        {relayStatus ? 'Appliance turned ON' : 'Appliance turned OFF'}
+        </Text>
         <Switch
           trackColor={{ false: '#767577', true: '#f8fcfb' }}
           thumbColor={relayStatus ? '#9ae5c9' : '#f4f3f4'}
@@ -113,25 +95,21 @@ const Chart = (props) => {
   );
 };
 
-const data = [
-  { key: '1', value: 'Fan' },
-  { key: '2', value: 'Charger' },
-  { key: '3', value: 'Television' },
-];
-
 const styles = StyleSheet.create({
   footerContainer: {
     alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'row',
   },
-  dropdown: {
-    backgroundColor: '#9ae5c9',
-    width: 200,
-    borderRadius: 8,
+  textSwitch: {
+    fontSize: 16,
+    fontWeight: 'bold'
   },
   switchContainer: {
-    // Add your styles here
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    flexDirection: 'row',
   },
   centeredView: {
     flex: 1,

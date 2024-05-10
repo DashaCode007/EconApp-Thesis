@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { db, ref, onValue } from '../firebase';
+import { db, ref, onValue, update } from '../firebase';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 
@@ -13,9 +13,7 @@ const ChartConsumption = () => {
     const unsubscribeSensor = onValue(sensorRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        console.log('Fetched data:');
         setSensorData(data);
-        console.log('YESSSSS');
       } else {
         console.log('No data found in Firebase.');
       }
@@ -59,7 +57,6 @@ const ChartConsumption = () => {
   // Extract MM-DD labels and total cost values
   const labels = dailyCostData.map(item => item.date);
   const chartData = dailyCostData.map(item => item.totalCost.toFixed(2));
-  console.log(chartData)
   // Render the chart
   return (
     <View style={styles.chartContainer}>

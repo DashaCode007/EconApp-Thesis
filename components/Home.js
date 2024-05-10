@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Button, Text, StyleSheet, StatusBar } from 'react-native';
 
+
 const Home = ({navigation}) => {
     return (
         <View style={styles.container}>
@@ -11,6 +12,7 @@ const Home = ({navigation}) => {
             <View style={styles.homeBtn}>
             <Button color={'#4AC998'} onPress={() =>navigation.navigate('Header')} title='Get Started'></Button></View>
         </View>
+        
     )
 }
 
